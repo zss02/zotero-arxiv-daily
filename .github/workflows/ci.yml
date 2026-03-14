@@ -33,10 +33,14 @@ jobs:
         env:
           ZOTERO_ID: "0"
           ZOTERO_KEY: "AbCdEfGhIjKlMnOpQrStUvWx"
+          ZOTERO_IGNORE: ""
           SENDER: "test@example.com"
           RECEIVER: "test@example.com"
+          SMTP_SERVER: "localhost"
+          SMTP_PORT: "1025"
           SENDER_PASSWORD: "test"
           OPENAI_API_KEY: "sk-xxx"
           OPENAI_API_BASE: "http://openai:30000/v1"
+          MODEL_NAME: "gpt-3.5-turbo"
         run: |
           uv run pytest -m ""

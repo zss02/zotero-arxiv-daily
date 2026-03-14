@@ -1,7 +1,7 @@
 zotero:
   user_id: ${oc.env:ZOTERO_ID}
   api_key: ${oc.env:ZOTERO_KEY}
-  include_path: ${oc.env:ZOTERO_IGNORE}
+  include_path: ${oc.env:ZOTERO_INCLUDE}
 
 email:
   sender: ${oc.env:SENDER}

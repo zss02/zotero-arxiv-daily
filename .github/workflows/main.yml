@@ -2,7 +2,7 @@ name: Send emails daily
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 2 * * *'
 
 jobs:
   calculate-and-send:
@@ -21,11 +21,20 @@ jobs:
         env:
           ZOTERO_ID: ${{ secrets.ZOTERO_ID }}
           ZOTERO_KEY: ${{ secrets.ZOTERO_KEY }}
+          ZOTERO_INCLUDE: ${{ secrets.ZOTERO_INCLUDE }}
+
           SENDER: ${{ secrets.SENDER }}
           RECEIVER: ${{ secrets.RECEIVER }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+          MODEL_NAME: ${{ secrets.MODEL_NAME }}
+
+          DEBUG: ${{ secrets.DEBUG }}
+          
           CUSTOM_CONFIG: ${{ vars.CUSTOM_CONFIG }}
         run: |
           if [ -n "$CUSTOM_CONFIG" ]; then
