@@ -38,5 +38,6 @@ jobs:
           SENDER_PASSWORD: "test"
           OPENAI_API_KEY: "sk-xxx"
           OPENAI_API_BASE: "http://openai:30000/v1"
+          MODEL_NAME: your-model-name
         run: |
           uv run pytest -m ""
