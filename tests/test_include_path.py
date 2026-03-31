@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 from omegaconf import OmegaConf
 
-from zotero_arxiv_daily.executor import Executor, normalize_include_path_patterns, normalize_ignore_path_patterns
+from zotero_arxiv_daily.executor import Executor, normalize_path_patterns, normalize_include_path_patterns, normalize_ignore_path_patterns
 from zotero_arxiv_daily.protocol import CorpusPaper
 
 
