@@ -4,19 +4,19 @@ from types import SimpleNamespace
 import pytest
 from omegaconf import OmegaConf
 
-from zotero_arxiv_daily.executor import Executor, normalize_path_patterns, normalize_include_path_patterns, normalize_ignore_path_patterns
+from zotero_arxiv_daily.executor import Executor, normalize_path_patterns
 from zotero_arxiv_daily.protocol import CorpusPaper
 
 
 def test_normalize_include_path_patterns_rejects_single_string():
     with pytest.raises(TypeError, match="config.zotero.include_path must be a list of glob patterns or null"):
-        normalize_include_path_patterns("2026/survey/**")
+        normalize_path_patterns("2026/survey/**", "include_path")
 
 
 def test_normalize_include_path_patterns_accepts_list_config():
     include_path = OmegaConf.create(["2026/survey/**", "2026/reading-group/**"])
 
-    assert normalize_include_path_patterns(include_path) == [
+    assert normalize_path_patterns(include_path, "include_path") == [
         "2026/survey/**",
         "2026/reading-group/**",
     ]
@@ -27,7 +27,7 @@ def test_filter_corpus_matches_any_path_against_any_pattern():
     executor.config = SimpleNamespace(
         zotero=SimpleNamespace(include_path=["2026/survey/**", "2026/reading-group/**"])
     )
-    executor.include_path_patterns = normalize_include_path_patterns(executor.config.zotero.include_path)
+    executor.include_path_patterns = normalize_path_patterns(executor.config.zotero.include_path, "include_path")
     executor.ignore_path_patterns = None
 
     corpus = [
@@ -58,23 +58,23 @@ def test_filter_corpus_matches_any_path_against_any_pattern():
 
 def test_normalize_ignore_path_patterns_rejects_single_string():
     with pytest.raises(TypeError, match="config.zotero.ignore_path must be a list of glob patterns or null"):
-        normalize_ignore_path_patterns("archive/**")
+        normalize_path_patterns("archive/**", "ignore_path")
 
 
 def test_normalize_ignore_path_patterns_accepts_list_config():
     ignore_path = OmegaConf.create(["archive/**", "2025/**"])
 
-    assert normalize_ignore_path_patterns(ignore_path) == ["archive/**", "2025/**"]
+    assert normalize_path_patterns(ignore_path, "ignore_path") == ["archive/**", "2025/**"]
 
 
 def test_normalize_ignore_path_patterns_accepts_empty_list():
-    assert normalize_ignore_path_patterns([]) == []
+    assert normalize_path_patterns([], "ignore_path") == []
 
 
 def test_filter_corpus_excludes_papers_matching_ignore_path():
     executor = Executor.__new__(Executor)
     executor.include_path_patterns = None
-    executor.ignore_path_patterns = normalize_ignore_path_patterns(["archive/**", "2025/**"])
+    executor.ignore_path_patterns = normalize_path_patterns(["archive/**", "2025/**"], "ignore_path")
 
     corpus = [
         CorpusPaper(
@@ -105,8 +105,8 @@ def test_filter_corpus_excludes_papers_matching_ignore_path():
 def test_filter_corpus_ignore_path_takes_precedence_over_include_path():
     """Papers matching both include_path and ignore_path should be excluded."""
     executor = Executor.__new__(Executor)
-    executor.include_path_patterns = normalize_include_path_patterns(["2026/**"])
-    executor.ignore_path_patterns = normalize_ignore_path_patterns(["2026/ignore/**"])
+    executor.include_path_patterns = normalize_path_patterns(["2026/**"], "include_path")
+    executor.ignore_path_patterns = normalize_path_patterns(["2026/ignore/**"], "ignore_path")
 
     corpus = [
         CorpusPaper(
