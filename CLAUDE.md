@@ -12,14 +12,14 @@ Zotero-arXiv-Daily recommends new arXiv/bioRxiv/medRxiv papers based on a user's
 # Run the application
 uv run src/zotero_arxiv_daily/main.py
 
-# Run tests (excludes CI-only tests by default)
+# Run tests (excludes slow tests by default)
 uv run pytest
 
-# Run all tests including CI-marked ones (needs mock SMTP + mock OpenAI services)
+# Run all tests including slow ones
 uv run pytest -m ""
 
 # Run a single test
-uv run pytest tests/test_glob_match.py::test_glob_match -v
+uv run pytest tests/test_utils.py::TestGlobMatch -v
 
 # Install/sync dependencies
 uv sync
@@ -54,7 +54,26 @@ Uses Hydra + OmegaConf. Config is composed from `config/base.yaml` (defaults) + 
 
 ## Testing
 
-Tests marked `@pytest.mark.ci` require external services (mock SMTP via MailHog on port 1025, mock OpenAI server on port 30000) and are skipped locally by default (`addopts = "-m 'not ci'"` in pyproject.toml). CI configures these as service containers.
+Tests marked `@pytest.mark.slow` require heavy dependencies (e.g., sentence-transformers model download) and are skipped locally by default (`addopts = "-m 'not slow'"` in pyproject.toml). All other tests run with pure Python stubs (no Docker containers needed).
+
+```bash
+# Run tests (excludes slow tests)
+uv run pytest
+
+# Run all tests including slow ones
+uv run pytest -m ""
+
+# Run with coverage
+uv run pytest --cov=src/zotero_arxiv_daily --cov-report=term-missing
+```
+
+## gstack
+
+Use the `/browse` skill from gstack for all web browsing. Never use `mcp__claude-in-chrome__*` tools.
+
+Available skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/retro`, `/investigate`, `/document-release`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`.
+
+If gstack skills aren't working, run `cd .claude/skills/gstack && ./setup` to build the binary and register skills.
 
 ## Git Workflow
 
