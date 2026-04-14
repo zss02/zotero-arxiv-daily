@@ -6,7 +6,7 @@ import io
 
 import pytest
 
-from zotero_arxiv_daily.utils import glob_match, send_email, extract_tex_code_from_tar
+from zotero_arxiv_daily.utils import glob_match, send_email, extract_tex_code_from_tar, _bm25_pick
 from tests.canned_responses import make_stub_smtp
 
 
@@ -248,3 +248,43 @@ def test_extract_tex_multiple_tex_no_bbl(make_tar):
     result = extract_tex_code_from_tar(path, "test-paper")
     assert result is not None
     assert "Main content" in result["all"]
+
+
+def test_extract_tex_multiple_document_blocks_bm25(make_tar):
+    """When multiple tex files contain \\begin{document}, BM25 picks the one matching paper_title."""
+    path = make_tar({
+        "appendix.tex": "\\begin{document}\n\\title{Supplementary Material}\nAppendix stuff\n\\end{document}",
+        "main.tex": "\\begin{document}\n\\title{Quantum Entanglement in Neural Networks}\nReal content here\n\\end{document}",
+    })
+    result = extract_tex_code_from_tar(path, "test-paper", paper_title="Quantum Entanglement in Neural Networks")
+    assert result is not None
+    assert "Real content here" in result["all"]
+
+
+def test_extract_tex_multiple_document_blocks_no_title(make_tar):
+    """Without paper_title, falls back to the first candidate."""
+    path = make_tar({
+        "a.tex": "\\begin{document}\nFirst doc\n\\end{document}",
+        "b.tex": "\\begin{document}\nSecond doc\n\\end{document}",
+    })
+    result = extract_tex_code_from_tar(path, "test-paper")
+    assert result is not None
+    assert result["all"] is not None
+
+
+class TestBm25Pick:
+    def test_picks_best_match(self):
+        candidates = {
+            "a.tex": "This paper discusses cats and dogs in the wild",
+            "b.tex": "Quantum entanglement in neural network architectures",
+        }
+        assert _bm25_pick("Quantum entanglement neural networks", candidates) == "b.tex"
+
+    def test_single_candidate(self):
+        candidates = {"only.tex": "Some content here"}
+        assert _bm25_pick("anything", candidates) == "only.tex"
+
+    def test_empty_query_returns_first(self):
+        candidates = {"a.tex": "hello", "b.tex": "world"}
+        result = _bm25_pick("", candidates)
+        assert result in candidates
